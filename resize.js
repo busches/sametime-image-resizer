@@ -5,11 +5,20 @@ var gifsiclePath = require('gifsicle').path;
 var tempfile = require('tempfile');
 var fs = require('fs');
 
-var input = 'really.gif';
-var output = 'really_shrunk.gif';
+var args = process.argv.slice(2);
+
+if (args.length === 0) {
+	console.log("No image supplied to resize!");
+	return;
+} else if (args.length > 1) {
+	console.log("Too many arguments, only expecting 1, received " + args.length);
+}
+
+var input = args[0];
+var output = 'shrunk_' + input;
 var tempOutput = tempfile('.gif');
 
-var debug = false;
+var debug = true;
 
 execFile(gifsiclePath, [input, '--size-info'], function(err, stdout) {
 	if (err) {
