@@ -4,7 +4,7 @@
   "description": "Resizes gif files to be less than 500kb to work on Sametime",
   "main": "resize.js",
   "dependencies": {
-    "gifsicle": "^2.0.1",
+    "gifsicle": "^3.0.1",
     "tempfile": "^1.1.1"
   },
   "devDependencies": {},

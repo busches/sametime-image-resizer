@@ -1,7 +1,7 @@
 'use strict';
 
 var execFile = require('child_process').execFile;
-var gifsiclePath = require('gifsicle').path;
+var gifsiclePath = require('gifsicle');
 var tempfile = require('tempfile');
 var fs = require('fs');
 
