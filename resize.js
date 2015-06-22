@@ -12,6 +12,7 @@ if (args.length === 0) {
   return;
 } else if (args.length > 1) {
   console.log('Too many arguments, only expecting 1, received ' + args.length);
+  return;
 }
 
 var input = args[0];
