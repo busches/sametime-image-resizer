@@ -1,0 +1,16 @@
+{
+  "name": "sametime-image-resizer",
+  "version": "1.0.0",
+  "description": "Resizes gif files to be less than 500kb to work on Sametime",
+  "main": "resize.js",
+  "dependencies": {
+    "gifsicle": "^2.0.1",
+    "tempfile": "^1.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "UNLICENSED"
+}
