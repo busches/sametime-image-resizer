@@ -25,10 +25,11 @@ execFile(gifsiclePath, [input, '--size-info'], function(err, stdout) {
 		return cb(err);
 	}
 
+	var dimensions;
 	var parsedStdOut = stdout.split('\r\n');
 	for (var lineNum = parsedStdOut.length - 1; lineNum >= 0; lineNum--) {
 		if (parsedStdOut[lineNum].indexOf("logical screen") > 0) {
-			var dimensions = parsedStdOut[lineNum].replace("logical screen", "").trim().split("x");
+			dimensions = parsedStdOut[lineNum].replace("logical screen", "").trim().split("x");
 			if (debug) console.log(dimensions);
 			break;
 		}
@@ -53,7 +54,7 @@ execFile(gifsiclePath, [input, '--size-info'], function(err, stdout) {
 			if (err) {
 				return cb(err);
 			}
-		
+
 			fs.stat(tempOutput, function(err, stat) {
 				if (err) {
 					return cb(err);
@@ -80,38 +81,38 @@ execFile(gifsiclePath, [input, '--size-info'], function(err, stdout) {
 						console.log("All done");
 					});
 				}
-			});		
+			});
 		});
 	};
 
 	resize();
 });
 
-function cb (err) {
+function cb(err) {
 	console.log("shit's broken");
 	console.log(err);
 }
 
 function copyFile(source, target, cb) {
-  var cbCalled = false;
+	var cbCalled = false;
 
-  var rd = fs.createReadStream(source);
-  rd.on("error", function(err) {
-    done(err);
-  });
-  var wr = fs.createWriteStream(target);
-  wr.on("error", function(err) {
-    done(err);
-  });
-  wr.on("close", function(ex) {
-    done();
-  });
-  rd.pipe(wr);
+	var rd = fs.createReadStream(source);
+	rd.on("error", function(err) {
+		done(err);
+	});
+	var wr = fs.createWriteStream(target);
+	wr.on("error", function(err) {
+		done(err);
+	});
+	wr.on("close", function(ex) {
+		done();
+	});
+	rd.pipe(wr);
 
-  function done(err) {
-    if (!cbCalled) {
-      cb(err);
-      cbCalled = true;
-    }
-  }
+	function done(err) {
+		if (!cbCalled) {
+			cb(err);
+			cbCalled = true;
+		}
+	}
 }
