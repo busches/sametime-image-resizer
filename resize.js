@@ -22,7 +22,7 @@ var debug = true;
 
 execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, stdout) {
   if (err) {
-    return cb(err);
+    return handleError(err);
   }
 
   var dimensions;
@@ -46,7 +46,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
   var size;
   fs.stat(input, function(err, stat) {
     if (err) {
-      return cb(err);
+      return handleError(err);
     }
     size = stat.size;
   });
@@ -60,12 +60,12 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
 
   var validateSize = function(err) {
     if (err) {
-      return cb(err);
+      return handleError(err);
     }
 
     fs.stat(tempOutput, function(err, stat) {
       if (err) {
-        return cb(err);
+        return handleError(err);
       }
       size = stat.size;
       if (debug) {
@@ -86,7 +86,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
       } else {
         copyFile(tempOutput, output, function(err) {
           if (err) {
-            return cb(err);
+            return handleError(err);
           }
           console.log('All done');
         });
@@ -101,12 +101,12 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
   resize();
 });
 
-function cb(err) {
+function handleError(err) {
   console.log('Something broke');
   console.log(err);
 }
 
-function copyFile(source, target, cb) {
+function copyFile(source, target, handleError) {
   var cbCalled = false;
 
   var rd = fs.createReadStream(source);
@@ -124,7 +124,7 @@ function copyFile(source, target, cb) {
 
   function done(err) {
     if (!cbCalled) {
-      cb(err);
+      handleError(err);
       cbCalled = true;
     }
   }
