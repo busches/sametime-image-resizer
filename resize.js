@@ -30,7 +30,9 @@ execFile(gifsiclePath, [input, '--size-info'], function(err, stdout) {
 	for (var lineNum = parsedStdOut.length - 1; lineNum >= 0; lineNum--) {
 		if (parsedStdOut[lineNum].indexOf("logical screen") > 0) {
 			dimensions = parsedStdOut[lineNum].replace("logical screen", "").trim().split("x");
-			if (debug) console.log(dimensions);
+			if (debug) {
+				console.log(dimensions);
+			}
 			break;
 		}
 	}
@@ -60,7 +62,9 @@ execFile(gifsiclePath, [input, '--size-info'], function(err, stdout) {
 					return cb(err);
 				}
 				size = stat.size;
-				if (debug) console.log('Size is now: ' + size + ' - ' + newWidth);
+				if (debug) {
+					console.log('Size is now: ' + size + ' - ' + newWidth);
+				}
 
 				if (size > idealSize) {
 					if (size > 1024000) {
@@ -104,7 +108,7 @@ function copyFile(source, target, cb) {
 	wr.on("error", function(err) {
 		done(err);
 	});
-	wr.on("close", function(ex) {
+	wr.on("close", function() {
 		done();
 	});
 	rd.pipe(wr);
