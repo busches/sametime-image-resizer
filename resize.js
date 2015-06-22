@@ -4,14 +4,15 @@ var execFile = require('child_process').execFile;
 var gifsiclePath = require('gifsicle');
 var tempfile = require('tempfile');
 var fs = require('fs');
+var chalk = require('chalk');
 
 var args = process.argv.slice(2);
 
 if (args.length === 0) {
-  console.log('No image supplied to resize!');
+  printError('No image supplied to resize!');
   return;
 } else if (args.length > 1) {
-  console.log('Too many arguments, only expecting 1, received ' + args.length);
+  printError('Too many arguments, only expecting 1, received ' + args.length);
   return;
 }
 
@@ -37,7 +38,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
     if (parsedStdOut[lineNum].indexOf('logical screen') > 0) {
       dimensions = parseDimensions(parsedStdOut[lineNum]);
       if (debug) {
-        console.log(dimensions);
+        printInfo(dimensions);
       }
       break;
     }
@@ -70,7 +71,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
       }
       size = stat.size;
       if (debug) {
-        console.log('Size is now: ' + size + ' - ' + newWidth);
+        printInfo('Size is now: ' + size + ' - ' + newWidth);
       }
 
       if (size > idealSize) {
@@ -89,7 +90,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
           if (err) {
             return handleError(err);
           }
-          console.log('All done');
+          printInfo('All done');
         });
       }
     });
@@ -103,8 +104,8 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
 });
 
 function handleError(err) {
-  console.log('Something broke');
-  console.log(err);
+  printError('Something has gone wrong:');
+  printError(err);
 }
 
 function copyFile(source, target, handleError) {
@@ -129,4 +130,14 @@ function copyFile(source, target, handleError) {
       cbCalled = true;
     }
   }
+}
+
+
+function printError(text) {
+  // Yellow is used because I'm color blind and red is a dumb color
+  console.log(chalk.yellow(text));
+}
+
+function printInfo(text) {
+  console.log(chalk.blue(text));
 }
