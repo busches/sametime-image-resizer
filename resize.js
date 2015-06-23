@@ -93,7 +93,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
             return handleError(err);
           }
           var endTime = process.hrtime(startTime);
-          printInfo('All done - ' + prettyHrtime(endTime));
+          printSuccess('All done - ' + prettyHrtime(endTime));
         });
       }
     });
@@ -143,4 +143,8 @@ function printError(text) {
 
 function printInfo(text) {
   console.log(chalk.blue(text));
+}
+
+function printSuccess(text) {
+  console.log(chalk.green(text));
 }
