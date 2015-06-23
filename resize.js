@@ -5,6 +5,8 @@ var gifsiclePath = require('gifsicle');
 var tempfile = require('tempfile');
 var fs = require('fs');
 var chalk = require('chalk');
+var prettyHrtime = require('pretty-hrtime');
+var startTime = process.hrtime();
 
 var args = process.argv.slice(2);
 
@@ -38,7 +40,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
     if (parsedStdOut[lineNum].indexOf('logical screen') > 0) {
       dimensions = parseDimensions(parsedStdOut[lineNum]);
       if (debug) {
-        printInfo(dimensions);
+        printInfo('Starting size - ' + dimensions);
       }
       break;
     }
@@ -86,11 +88,12 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
         }
         resize();
       } else {
-        copyFile(tempOutput, output, function(err) {
+        copyFile(tempOutput, output, function copyFinishedFile(err) {
           if (err) {
             return handleError(err);
           }
-          printInfo('All done');
+          var endTime = process.hrtime(startTime);
+          printInfo('All done - ' + prettyHrtime(endTime));
         });
       }
     });
