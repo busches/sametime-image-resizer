@@ -12,10 +12,10 @@ var args = process.argv.slice(2);
 
 if (args.length === 0) {
   printError('No image supplied to resize!');
-  return;
+  process.exit(1);
 } else if (args.length > 1) {
   printError('Too many arguments, only expecting 1, received ' + args.length);
-  return;
+  process.exit(2);
 }
 
 var input = args[0];
