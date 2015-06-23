@@ -24,7 +24,9 @@ var tempOutput = tempfile('.gif');
 
 var debug = true;
 
-execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, stdout) {
+execFile(gifsiclePath, [input, '--size-info'], processFileSize);
+
+function processFileSize(err, stdout) {
   if (err) {
     return handleError(err);
   }
@@ -48,7 +50,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
 
   var originalWidth = dimensions[0];
   var size;
-  fs.stat(input, function(err, stat) {
+  fs.stat(input, function processFileSize(err, stat) {
     if (err) {
       return handleError(err);
     }
@@ -104,7 +106,7 @@ execFile(gifsiclePath, [input, '--size-info'], function processFileSize(err, std
   };
 
   resize();
-});
+}
 
 function handleError(err) {
   printError('Something has gone wrong:');
@@ -134,7 +136,6 @@ function copyFile(source, target, handleError) {
     }
   }
 }
-
 
 function printError(text) {
   // Yellow is used because I'm color blind and red is a dumb color
