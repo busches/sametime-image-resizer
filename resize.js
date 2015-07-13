@@ -1,151 +1,109 @@
 'use strict';
 
-var execFile = require('child_process').execFile;
-var gifsiclePath = require('gifsicle');
-var tempfile = require('tempfile');
+var Promise = require('bluebird');
+
+var execFile = Promise.promisify(require('child_process').execFile);
 var fs = require('fs');
-var chalk = require('chalk');
+Promise.promisifyAll(fs);
+var gifsicle = require('gifsicle');
 var prettyHrtime = require('pretty-hrtime');
+var print = require('./print.js');
 var startTime = process.hrtime();
+var tempfile = require('tempfile');
 
 var args = process.argv.slice(2);
 
 if (args.length === 0) {
-  printError('No image supplied to resize!');
+  print.error('No image supplied to resize!');
   process.exit(1);
 } else if (args.length > 1) {
-  printError('Too many arguments, only expecting 1, received ' + args.length);
+  print.error('Too many arguments, only expecting 1, received ' + args.length);
   process.exit(2);
 }
 
 var input = args[0];
 var output = 'shrunk_' + input;
 var tempOutput = tempfile('.gif');
-
 var debug = true;
 
-execFile(gifsiclePath, [input, '--size-info'], processFileSize);
+var handleError = function(err) {
+  print.error('Something has gone wrong:');
+  print.error(err);
+};
 
-function processFileSize(err, stdout) {
-  if (err) {
-    return handleError(err);
-  }
+var parseDimensionsFromOutput = function(stdIn) {
+  return stdIn.replace('logical screen', '').trim().split('x');
+};
 
-  var dimensions;
-
-  var parseDimensions = function(stdIn) {
-    return stdIn.replace('logical screen', '').trim().split('x');
-  };
-
+var parseDimensions = function(stdout) {
   var parsedStdOut = stdout.split('\r\n');
   for (var lineNum = parsedStdOut.length - 1; lineNum >= 0; lineNum--) {
     if (parsedStdOut[lineNum].indexOf('logical screen') > 0) {
-      dimensions = parseDimensions(parsedStdOut[lineNum]);
+      var dimensions = parseDimensionsFromOutput(parsedStdOut[lineNum]);
       if (debug) {
-        printInfo('Starting size - ' + dimensions);
+        print.info('Starting size - ' + dimensions[0] + 'x' + dimensions[1]);
       }
-      break;
+      return dimensions;
     }
   }
+};
 
-  var originalWidth = dimensions[0];
-  var size;
-  fs.stat(input, function processFileSize(err, stat) {
-    if (err) {
-      return handleError(err);
-    }
-    size = stat.size;
+var buildArgs = function(width, outputFileName, input) {
+  return ['--resize-width', width, '-o', outputFileName, input, '-O3'];
+};
+
+var copySuccessful = function() {
+  var endTime = process.hrtime(startTime);
+  print.success('All done - ' + prettyHrtime(endTime));
+};
+
+var copyFile = function(source, target) {
+  return fs.readFileAsync(source)
+    .then(fs.writeFileAsync.bind(fs, target))
+    .then(copySuccessful)
+    .catch(handleError);
+};
+
+var getStartingWidth = function() {
+  return execFile(gifsicle, [input, '--size-info']).then(function(data) {
+    return parseDimensions(data[0])[0];
   });
+};
 
-  var newWidth = originalWidth;
+var getFileSize = function(file) {
+  return fs.statAsync(file);
+};
+
+// Should be able to split this out further
+var resize = function(width, inputFile) {
   var idealSize = 512000;
+  var newWidth = width;
 
-  var buildArgs = function(width, outputFileName, input) {
-    return ['--resize-width', width, '-o', outputFileName, input, '-O3'];
-  };
-
-  var validateSize = function(err) {
-    if (err) {
-      return handleError(err);
+  getFileSize(inputFile).then(function(fileData) {
+    var size = fileData.size;
+    if (debug) {
+      print.info('Size is now: ' + size + ' - ' + newWidth);
     }
 
-    fs.stat(tempOutput, function(err, stat) {
-      if (err) {
-        return handleError(err);
-      }
-      size = stat.size;
-      if (debug) {
-        printInfo('Size is now: ' + size + ' - ' + newWidth);
-      }
-
-      if (size > idealSize) {
-        if (size > 1024000) {
-          newWidth -= 50;
-        } else if (size > 768000) {
-          newWidth -= 10;
-        } else if (size > 563200) {
-          newWidth -= 5;
-        } else {
-          newWidth -= 1;
-        }
-        resize();
+    if (size > idealSize) {
+      if (size > 1024000) {
+        newWidth -= 50;
+      } else if (size > 768000) {
+        newWidth -= 10;
+      } else if (size > 563200) {
+        newWidth -= 5;
       } else {
-        copyFile(tempOutput, output, function copyFinishedFile(err) {
-          if (err) {
-            return handleError(err);
-          }
-          var endTime = process.hrtime(startTime);
-          printSuccess('All done - ' + prettyHrtime(endTime));
-        });
+        newWidth -= 1;
       }
-    });
-  };
-
-  var resize = function() {
-    execFile(gifsiclePath, buildArgs(newWidth, tempOutput, input), validateSize);
-  };
-
-  resize();
-}
-
-function handleError(err) {
-  printError('Something has gone wrong:');
-  printError(err);
-}
-
-function copyFile(source, target, handleError) {
-  var cbCalled = false;
-
-  var rd = fs.createReadStream(source);
-  rd.on('error', function(err) {
-    done(err);
-  });
-  var wr = fs.createWriteStream(target);
-  wr.on('error', function(err) {
-    done(err);
-  });
-  wr.on('close', function() {
-    done();
-  });
-  rd.pipe(wr);
-
-  function done(err) {
-    if (!cbCalled) {
-      handleError(err);
-      cbCalled = true;
+      execFile(gifsicle, buildArgs(width, tempOutput, input)).then(function() {
+        resize(newWidth, tempOutput);
+      });
+    } else {
+      copyFile(tempOutput, output);
     }
-  }
-}
+  });
+};
 
-function printError(text) {
-  // Yellow is used because I'm color blind and red is a dumb color
-  console.log(chalk.yellow(text));
-}
-
-function printInfo(text) {
-  console.log(chalk.blue(text));
-}
-
-function printSuccess(text) {
-  console.log(chalk.green(text));
-}
+getStartingWidth().then(function(width) {
+  resize(width, input);
+}).catch(handleError);
