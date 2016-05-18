@@ -66,7 +66,7 @@ var copyFile = function(source, target) {
 
 var getStartingWidth = function() {
   return execFile(gifsicle, [input, '--size-info']).then(function(data) {
-    return parseDimensions(data[0])[0];
+    return parseDimensions(data)[0];
   });
 };
 
