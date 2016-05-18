@@ -10,15 +10,19 @@
     "pretty-hrtime": "^1.0.0",
     "tempfile": "^1.1.1"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "devDependencies": {
+    "xo": "^0.15.1"
   },
-  "repository" :
-    {
-      "type" : "git",
-      "url" : "https://github.com/busches/sametime-image-resizer.git"
+  "scripts": {
+    "lint": "xo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/busches/sametime-image-resizer.git"
   },
   "author": "Scott Busche",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "xo": {
+    "space": 2
+  }
 }

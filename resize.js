@@ -1,24 +1,24 @@
 'use strict';
 
-var Promise = require('bluebird');
-
-var execFile = Promise.promisify(require('child_process').execFile);
 var fs = require('fs');
-Promise.promisifyAll(fs);
+var childProcess = require('child_process');
 var gifsicle = require('gifsicle');
 var prettyHrtime = require('pretty-hrtime');
-var print = require('./print.js');
-var startTime = process.hrtime();
 var tempfile = require('tempfile');
 
+var Promise = require('bluebird');
+var execFile = Promise.promisify(childProcess.execFile);
+Promise.promisifyAll(fs);
+
+var startTime = process.hrtime();
+
+var print = require('./print.js');
 var args = process.argv.slice(2);
 
 if (args.length === 0) {
-  print.error('No image supplied to resize!');
-  process.exit(1);
+  throw new Error('No image supplied to resize!');
 } else if (args.length > 1) {
-  print.error('Too many arguments, only expecting 1, received ' + args.length);
-  process.exit(2);
+  throw new Error('Too many arguments, only expecting 1, received ' + args.length);
 }
 
 var input = args[0];
@@ -26,21 +26,21 @@ var output = 'shrunk_' + input;
 var tempOutput = tempfile('.gif');
 var debug = true;
 
-var handleError = function(err) {
+var handleError = function (err) {
   print.error('Something has gone wrong:');
   print.error(err);
 };
 
-var parseDimensionsFromOutput = function(stdIn) {
+var parseDimensionsFromOutput = function (stdIn) {
   return stdIn.replace('logical screen', '').trim().split('x');
 };
 
-var parseDimensions = function(stdout) {
+var parseDimensions = function (stdout) {
   return stdout.split('\r\n')
-    .filter(function(line) {
+    .filter(function (line) {
       return line.indexOf('logical screen') > 0;
     })
-    .map(function(rawDimensions) {
+    .map(function (rawDimensions) {
       var dimensions = parseDimensionsFromOutput(rawDimensions);
       if (debug) {
         print.info('Starting size - ' + dimensions[0] + 'x' + dimensions[1]);
@@ -50,38 +50,38 @@ var parseDimensions = function(stdout) {
   );
 };
 
-var buildArgs = function(width, outputFileName, input) {
+var buildArgs = function (width, outputFileName, input) {
   return ['--resize-width', width, '-o', outputFileName, input, '-O3'];
 };
 
-var copySuccessful = function() {
+var copySuccessful = function () {
   var endTime = process.hrtime(startTime);
   print.success('All done - ' + prettyHrtime(endTime));
 };
 
-var copyFile = function(source, target) {
+var copyFile = function (source, target) {
   return fs.readFileAsync(source)
     .then(fs.writeFileAsync.bind(fs, target))
     .then(copySuccessful)
     .catch(handleError);
 };
 
-var getStartingWidth = function() {
-  return execFile(gifsicle, [input, '--size-info']).then(function(data) {
+var getStartingWidth = function () {
+  return execFile(gifsicle, [input, '--size-info']).then(function (data) {
     return parseDimensions(data)[0];
   });
 };
 
-var getFileSize = function(file) {
+var getFileSize = function (file) {
   return fs.statAsync(file);
 };
 
 // Should be able to split this out further
-var resize = function(width, inputFile, initialRun) {
+var resize = function (width, inputFile, initialRun) {
   var idealSize = 512000;
   var newWidth = width;
 
-  getFileSize(inputFile).then(function(fileData) {
+  getFileSize(inputFile).then(function (fileData) {
     var size = fileData.size;
     if (debug) {
       print.info('Size is now: ' + size + ' - ' + newWidth);
@@ -97,7 +97,7 @@ var resize = function(width, inputFile, initialRun) {
       } else {
         newWidth -= 1;
       }
-      execFile(gifsicle, buildArgs(width, tempOutput, input)).then(function() {
+      execFile(gifsicle, buildArgs(width, tempOutput, input)).then(function () {
         resize(newWidth, tempOutput, false);
       });
     } else if (initialRun) {
@@ -109,6 +109,6 @@ var resize = function(width, inputFile, initialRun) {
   });
 };
 
-getStartingWidth().then(function(width) {
+getStartingWidth().then(function (width) {
   resize(width, input, true);
 }).catch(handleError);
