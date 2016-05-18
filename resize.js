@@ -36,16 +36,18 @@ var parseDimensionsFromOutput = function(stdIn) {
 };
 
 var parseDimensions = function(stdout) {
-  var parsedStdOut = stdout.split('\r\n');
-  for (var lineNum = parsedStdOut.length - 1; lineNum >= 0; lineNum--) {
-    if (parsedStdOut[lineNum].indexOf('logical screen') > 0) {
-      var dimensions = parseDimensionsFromOutput(parsedStdOut[lineNum]);
+  return stdout.split('\r\n')
+    .filter(function(line) {
+      return line.indexOf('logical screen') > 0;
+    })
+    .map(function(rawDimensions) {
+      var dimensions = parseDimensionsFromOutput(rawDimensions);
       if (debug) {
         print.info('Starting size - ' + dimensions[0] + 'x' + dimensions[1]);
       }
-      return dimensions;
+      return dimensions[0];
     }
-  }
+  );
 };
 
 var buildArgs = function(width, outputFileName, input) {
