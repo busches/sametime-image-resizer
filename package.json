@@ -14,6 +14,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository" :
+    {
+      "type" : "git",
+      "url" : "https://github.com/busches/sametime-image-resizer.git"
+  },
+  "author": "Scott Busche",
   "license": "UNLICENSED"
 }
