@@ -77,7 +77,7 @@ var getFileSize = function(file) {
 };
 
 // Should be able to split this out further
-var resize = function(width, inputFile) {
+var resize = function(width, inputFile, initialRun) {
   var idealSize = 512000;
   var newWidth = width;
 
@@ -98,8 +98,11 @@ var resize = function(width, inputFile) {
         newWidth -= 1;
       }
       execFile(gifsicle, buildArgs(width, tempOutput, input)).then(function() {
-        resize(newWidth, tempOutput);
+        resize(newWidth, tempOutput, false);
       });
+    } else if (initialRun) {
+      print.info('File doesn\'t need resizing!');
+      copyFile(input, output);
     } else {
       copyFile(tempOutput, output);
     }
@@ -107,5 +110,5 @@ var resize = function(width, inputFile) {
 };
 
 getStartingWidth().then(function(width) {
-  resize(width, input);
+  resize(width, input, true);
 }).catch(handleError);
