@@ -1,19 +1,14 @@
 'use strict';
 
-const childProcess = require('child_process');
-const fs = require('fs');
 const path = require('path');
 
+const execFile = require('mz/child_process').execFile;
+const fs = require('mz/fs');
 const gifsicle = require('gifsicle');
 const prettyHrtime = require('pretty-hrtime');
 const tempfile = require('tempfile');
 
-const Promise = require('bluebird');
-
 const print = require('./print.js');
-
-const execFile = Promise.promisify(childProcess.execFile); // eslint-disable-line no-use-extend-native/no-use-extend-native
-Promise.promisifyAll(fs); // eslint-disable-line no-use-extend-native/no-use-extend-native
 
 const startTime = process.hrtime();
 
@@ -39,7 +34,7 @@ const handleError = err => print.error('Something has gone wrong:\n' + err);
 const parseDimensionsFromOutput = stdIn => stdIn.replace('logical screen', '').trim().split('x');
 
 const parseDimensions = function (stdout) {
-  return stdout.split('\r\n')
+  return stdout[0].split('\r\n')
     .filter(line => line.indexOf('logical screen') > 0)
     .map(rawDimensions => {
       const dimensions = parseDimensionsFromOutput(rawDimensions);
@@ -62,15 +57,15 @@ const copySuccessful = function () {
 };
 
 const copyFile = function (source, target) {
-  return fs.readFileAsync(source)
-    .then(fs.writeFileAsync.bind(fs, target))
+  return fs.readFile(source)
+    .then(fs.writeFile.bind(fs, target))
     .then(copySuccessful)
     .catch(handleError);
 };
 
 const getStartingWidth = () => execFile(gifsicle, [input, '--size-info']).then(data => parseDimensions(data).x);
 
-const getFileSize = file => fs.statAsync(file);
+const getFileSize = file => fs.stat(file);
 
 // Should be able to split this out further
 const resize = function (width, inputFile, initialRun) {
