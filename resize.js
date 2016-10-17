@@ -5,14 +5,15 @@ var childProcess = require('child_process');
 var gifsicle = require('gifsicle');
 var prettyHrtime = require('pretty-hrtime');
 var tempfile = require('tempfile');
-
 var Promise = require('bluebird');
-var execFile = Promise.promisify(childProcess.execFile);
-Promise.promisifyAll(fs);
+
+var print = require('./print.js');
+
+var execFile = Promise.promisify(childProcess.execFile); // eslint-disable-line no-use-extend-native/no-use-extend-native
+Promise.promisifyAll(fs); // eslint-disable-line no-use-extend-native/no-use-extend-native
 
 var startTime = process.hrtime();
 
-var print = require('./print.js');
 var args = process.argv.slice(2);
 
 if (args.length === 0) {
