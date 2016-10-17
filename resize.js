@@ -1,10 +1,13 @@
 'use strict';
 
-const fs = require('fs');
 const childProcess = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
 const gifsicle = require('gifsicle');
 const prettyHrtime = require('pretty-hrtime');
 const tempfile = require('tempfile');
+
 const Promise = require('bluebird');
 
 const print = require('./print.js');
@@ -23,7 +26,11 @@ if (args.length === 0) {
 }
 
 const input = args[0];
-const output = 'shrunk_' + input;
+const inputPath = path.parse(input);
+let output = 'shrunk_' + inputPath.base;
+if (inputPath.dir.length > 0) {
+  output = inputPath.dir + '\\' + output;
+}
 const tempOutput = tempfile('.gif');
 const debug = true;
 
