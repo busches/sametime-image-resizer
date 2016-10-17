@@ -1,20 +1,20 @@
 'use strict';
 
-var fs = require('fs');
-var childProcess = require('child_process');
-var gifsicle = require('gifsicle');
-var prettyHrtime = require('pretty-hrtime');
-var tempfile = require('tempfile');
-var Promise = require('bluebird');
+const fs = require('fs');
+const childProcess = require('child_process');
+const gifsicle = require('gifsicle');
+const prettyHrtime = require('pretty-hrtime');
+const tempfile = require('tempfile');
+const Promise = require('bluebird');
 
-var print = require('./print.js');
+const print = require('./print.js');
 
-var execFile = Promise.promisify(childProcess.execFile); // eslint-disable-line no-use-extend-native/no-use-extend-native
+const execFile = Promise.promisify(childProcess.execFile); // eslint-disable-line no-use-extend-native/no-use-extend-native
 Promise.promisifyAll(fs); // eslint-disable-line no-use-extend-native/no-use-extend-native
 
-var startTime = process.hrtime();
+const startTime = process.hrtime();
 
-var args = process.argv.slice(2);
+const args = process.argv.slice(2);
 
 if (args.length === 0) {
   throw new Error('No image supplied to resize!');
@@ -22,20 +22,20 @@ if (args.length === 0) {
   throw new Error('Too many arguments, only expecting 1, received ' + args.length);
 }
 
-var input = args[0];
-var output = 'shrunk_' + input;
-var tempOutput = tempfile('.gif');
-var debug = true;
+const input = args[0];
+const output = 'shrunk_' + input;
+const tempOutput = tempfile('.gif');
+const debug = true;
 
-var handleError = err => print.error('Something has gone wrong:\n' + err);
+const handleError = err => print.error('Something has gone wrong:\n' + err);
 
-var parseDimensionsFromOutput = stdIn => stdIn.replace('logical screen', '').trim().split('x');
+const parseDimensionsFromOutput = stdIn => stdIn.replace('logical screen', '').trim().split('x');
 
-var parseDimensions = function (stdout) {
+const parseDimensions = function (stdout) {
   return stdout.split('\r\n')
     .filter(line => line.indexOf('logical screen') > 0)
     .map(rawDimensions => {
-      var dimensions = parseDimensionsFromOutput(rawDimensions);
+      const dimensions = parseDimensionsFromOutput(rawDimensions);
       if (debug) {
         print.info('Starting size - ' + dimensions[0] + 'x' + dimensions[1]);
       }
@@ -47,31 +47,31 @@ var parseDimensions = function (stdout) {
     }, {});
 };
 
-var buildArgs = (width, outputFileName, input) => ['--resize-width', width, '-o', outputFileName, input, '-O3'];
+const buildArgs = (width, outputFileName, input) => ['--resize-width', width, '-o', outputFileName, input, '-O3'];
 
-var copySuccessful = function () {
-  var endTime = process.hrtime(startTime);
+const copySuccessful = function () {
+  const endTime = process.hrtime(startTime);
   print.success('All done - ' + prettyHrtime(endTime));
 };
 
-var copyFile = function (source, target) {
+const copyFile = function (source, target) {
   return fs.readFileAsync(source)
     .then(fs.writeFileAsync.bind(fs, target))
     .then(copySuccessful)
     .catch(handleError);
 };
 
-var getStartingWidth = () => execFile(gifsicle, [input, '--size-info']).then(data => parseDimensions(data).x);
+const getStartingWidth = () => execFile(gifsicle, [input, '--size-info']).then(data => parseDimensions(data).x);
 
-var getFileSize = file => fs.statAsync(file);
+const getFileSize = file => fs.statAsync(file);
 
 // Should be able to split this out further
-var resize = function (width, inputFile, initialRun) {
-  var idealSize = 512000;
-  var newWidth = width;
+const resize = function (width, inputFile, initialRun) {
+  const idealSize = 512000;
+  let newWidth = width;
 
   getFileSize(inputFile).then(function (fileData) {
-    var size = fileData.size;
+    const size = fileData.size;
     if (debug) {
       print.info('Size is now: ' + size + ' - ' + newWidth);
     }
