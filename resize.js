@@ -47,8 +47,11 @@ var parseDimensions = function (stdout) {
         print.info('Starting size - ' + dimensions[0] + 'x' + dimensions[1]);
       }
       return dimensions[0];
-    }
-  );
+    })
+    .reduce(function (dimensions, dimension, i) {
+      dimensions[i === 0 ? 'x' : 'y'] = dimension;
+      return dimensions;
+    }, {});
 };
 
 var buildArgs = function (width, outputFileName, input) {
@@ -69,7 +72,7 @@ var copyFile = function (source, target) {
 
 var getStartingWidth = function () {
   return execFile(gifsicle, [input, '--size-info']).then(function (data) {
-    return parseDimensions(data)[0];
+    return parseDimensions(data).x;
   });
 };
 
