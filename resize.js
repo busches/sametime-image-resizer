@@ -27,36 +27,27 @@ var output = 'shrunk_' + input;
 var tempOutput = tempfile('.gif');
 var debug = true;
 
-var handleError = function (err) {
-  print.error('Something has gone wrong:');
-  print.error(err);
-};
+var handleError = err => print.error('Something has gone wrong:\n' + err);
 
-var parseDimensionsFromOutput = function (stdIn) {
-  return stdIn.replace('logical screen', '').trim().split('x');
-};
+var parseDimensionsFromOutput = stdIn => stdIn.replace('logical screen', '').trim().split('x');
 
 var parseDimensions = function (stdout) {
   return stdout.split('\r\n')
-    .filter(function (line) {
-      return line.indexOf('logical screen') > 0;
-    })
-    .map(function (rawDimensions) {
+    .filter(line => line.indexOf('logical screen') > 0)
+    .map(rawDimensions => {
       var dimensions = parseDimensionsFromOutput(rawDimensions);
       if (debug) {
         print.info('Starting size - ' + dimensions[0] + 'x' + dimensions[1]);
       }
       return dimensions[0];
     })
-    .reduce(function (dimensions, dimension, i) {
+    .reduce((dimensions, dimension, i) => {
       dimensions[i === 0 ? 'x' : 'y'] = dimension;
       return dimensions;
     }, {});
 };
 
-var buildArgs = function (width, outputFileName, input) {
-  return ['--resize-width', width, '-o', outputFileName, input, '-O3'];
-};
+var buildArgs = (width, outputFileName, input) => ['--resize-width', width, '-o', outputFileName, input, '-O3'];
 
 var copySuccessful = function () {
   var endTime = process.hrtime(startTime);
@@ -70,15 +61,9 @@ var copyFile = function (source, target) {
     .catch(handleError);
 };
 
-var getStartingWidth = function () {
-  return execFile(gifsicle, [input, '--size-info']).then(function (data) {
-    return parseDimensions(data).x;
-  });
-};
+var getStartingWidth = () => execFile(gifsicle, [input, '--size-info']).then(data => parseDimensions(data).x);
 
-var getFileSize = function (file) {
-  return fs.statAsync(file);
-};
+var getFileSize = file => fs.statAsync(file);
 
 // Should be able to split this out further
 var resize = function (width, inputFile, initialRun) {
@@ -101,9 +86,7 @@ var resize = function (width, inputFile, initialRun) {
       } else {
         newWidth -= 1;
       }
-      execFile(gifsicle, buildArgs(width, tempOutput, input)).then(function () {
-        resize(newWidth, tempOutput, false);
-      });
+      execFile(gifsicle, buildArgs(width, tempOutput, input)).then(() => resize(newWidth, tempOutput, false));
     } else if (initialRun) {
       print.info('File doesn\'t need resizing!');
       copyFile(input, output);
@@ -113,6 +96,4 @@ var resize = function (width, inputFile, initialRun) {
   });
 };
 
-getStartingWidth().then(function (width) {
-  resize(width, input, true);
-}).catch(handleError);
+getStartingWidth().then(width => resize(width, input, true)).catch(handleError);
