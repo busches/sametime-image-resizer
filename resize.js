@@ -69,7 +69,7 @@ const getFileSize = file => fs.stat(file);
 
 // Should be able to split this out further
 const resize = function (width, inputFile, initialRun) {
-  const idealSize = 512000;
+  const idealSize = 5 * 1024 * 1024;
   let newWidth = width;
 
   getFileSize(inputFile).then(fileData => {
@@ -79,11 +79,11 @@ const resize = function (width, inputFile, initialRun) {
     }
 
     if (size > idealSize) {
-      if (size > 1024000) {
+      if (size > idealSize * 2) {
         newWidth -= 50;
-      } else if (size > 768000) {
+      } else if (size > idealSize * 1.5) {
         newWidth -= 10;
-      } else if (size > 563200) {
+      } else if (size > idealSize * 1.1) {
         newWidth -= 5;
       } else {
         newWidth -= 1;
