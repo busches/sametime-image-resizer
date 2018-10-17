@@ -2,7 +2,7 @@
 
 const path = require('path');
 
-const execFile = require('mz/child_process').execFile;
+const {execFile} = require('mz/child_process');
 const fs = require('mz/fs');
 const gifsicle = require('gifsicle');
 const prettyHrtime = require('pretty-hrtime');
@@ -72,8 +72,8 @@ const resize = function (width, inputFile, initialRun) {
   const idealSize = 512000;
   let newWidth = width;
 
-  getFileSize(inputFile).then(function (fileData) {
-    const size = fileData.size;
+  getFileSize(inputFile).then(fileData => {
+    const {size} = fileData;
     if (debug) {
       print.info('Size is now: ' + size + ' - ' + newWidth);
     }

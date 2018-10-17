@@ -1,8 +1,8 @@
 'use strict';
 
-var chalk = require('chalk');
+const chalk = require('chalk');
 
-var print = (chalkColor, text) => console.log(chalkColor(text));
+const print = (chalkColor, text) => console.log(chalkColor(text));
 
 module.exports = {
   // Yellow is used because I'm color blind and red is a dumb color
