@@ -79,11 +79,17 @@ const resize = function (width, inputFile, initialRun) {
     }
 
     if (size > idealSize) {
-      if (size > idealSize * 2) {
+      if (size > idealSize * 6) {
+        newWidth -= 200;
+      } else if (size > idealSize * 4) {
+        newWidth -= 100;
+      } else if (size > idealSize * 2) {
         newWidth -= 50;
       } else if (size > idealSize * 1.5) {
-        newWidth -= 10;
+        newWidth -= 25;
       } else if (size > idealSize * 1.1) {
+        newWidth -= 10;
+      } else if (size > idealSize * 1.05) {
         newWidth -= 5;
       } else {
         newWidth -= 1;
@@ -91,7 +97,9 @@ const resize = function (width, inputFile, initialRun) {
       execFile(gifsicle, buildArgs(width, tempOutput, input)).then(() => resize(newWidth, tempOutput, false));
     } else if (initialRun) {
       print.info('File doesn\'t need resizing!');
+      if (input !== output) {
       copyFile(input, output);
+      }
     } else {
       copyFile(tempOutput, output);
     }
